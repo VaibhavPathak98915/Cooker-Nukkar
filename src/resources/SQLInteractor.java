@@ -42,7 +42,7 @@ public class SQLInteractor{
         return rs;
     }
     public ResultSet getRecipeByTitle(String Title) throws SQLException{
-        String fQuery = String.format("SELECT * FROM Recipies WHERE Title LIKE '%%s%';",Title);
+        String fQuery = "SELECT * FROM Recipies WHERE Title LIKE '%"+Title+"%';";
         rs = st.executeQuery(fQuery);
         return rs;
     }

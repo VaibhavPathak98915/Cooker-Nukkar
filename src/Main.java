@@ -3,17 +3,18 @@ import java.util.Scanner;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class Main{
-    private static final String JDBC_URL = "jdbc:sqlite:Recipies.db";
-    
+public class Main{    
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
         SQLInteractor db = new SQLInteractor();
         while(db.getcon()){
-            System.out.print("Enter Recipe id:");
-            int rid = sc.nextInt();
+            System.out.print("Enter Title:");
+            String Title = sc.nextLine();
+            if(Title==""){
+                break;
+            }
             try{
-                ResultSet result_set = db.getRecipeById(rid);
+                ResultSet result_set = db.getRecipeByTitle(Title);
                 while(result_set.next()){
                     System.out.println("ID:"+result_set.getInt("id"));
                     System.out.println("Title:"+result_set.getString("Title"));
