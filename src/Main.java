@@ -8,18 +8,19 @@ public class Main{
         Scanner sc = new Scanner(System.in);
         SQLInteractor db = new SQLInteractor();
         while(db.getcon()){
-            System.out.print("Enter Title:");
+            System.out.print("Search:");
             String Title = sc.nextLine();
             if(Title==""){
                 break;
             }
             try{
-                ResultSet result_set = db.getRecipeByTitle(Title);
+                ResultSet result_set = db.searchByTitle(Title);
                 while(result_set.next()){
                     System.out.println("ID:"+result_set.getInt("id"));
                     System.out.println("Title:"+result_set.getString("Title"));
-                    System.out.println("Ingredients:"+result_set.getString("Ingredients"));
-                    System.out.println("Instructions:"+result_set.getString("Instructions"));
+                    //System.out.println("Ingredients:"+result_set.getString("Ingredients"));
+                    String ImageFileName = result_set.getString("Image_Name")+".jpg";
+                    System.out.println("Image Name:"+ImageFileName);
                 }
             }
             catch(SQLException e){
