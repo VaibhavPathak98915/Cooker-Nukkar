@@ -1,12 +1,17 @@
+import resources.LoginFrame;
 import resources.SQLInteractor;
-import java.util.Scanner;
+
+import javax.swing.SwingUtilities;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 public class Main{    
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
         SQLInteractor db = new SQLInteractor();
+        SwingUtilities.invokeLater(LoginFrame::new);
         while(db.getcon()){
             System.out.print("Search:");
             String Title = sc.nextLine();
@@ -18,7 +23,6 @@ public class Main{
                 while(result_set.next()){
                     System.out.println("ID:"+result_set.getInt("id"));
                     System.out.println("Title:"+result_set.getString("Title"));
-                    //System.out.println("Ingredients:"+result_set.getString("Ingredients"));
                     String ImageFileName = result_set.getString("Image_Name")+".jpg";
                     System.out.println("Image Name:"+ImageFileName);
                 }
