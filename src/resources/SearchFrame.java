@@ -1,6 +1,8 @@
 package resources;
 import javax.swing.*;
 import java.awt.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class SearchFrame extends JFrame {
     JTextField searchField = new JTextField(22);
@@ -8,7 +10,7 @@ public class SearchFrame extends JFrame {
     JTextArea resultArea = new JTextArea(8, 36);
     String username;
 
-    public SearchFrame(String username) {
+    public SearchFrame(String username,SQLInteractor db) {
         this.username = username;
         setTitle("Recipe Search");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -49,7 +51,7 @@ public class SearchFrame extends JFrame {
         historyItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "History menu selected"));
         userProfileItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "User Profile menu selected"));
         helpItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Help clicked. Instructions here."));
-        quitItem.addActionListener(e -> System.exit(0));
+        quitItem.addActionListener(e -> {db.close();System.exit(0);});
 
         // ----------- UI CONTENT BELOW MENUBAR -----------
         ImageIcon imgIcon = new ImageIcon(getClass().getResource("logo.png"));
@@ -103,7 +105,7 @@ public class SearchFrame extends JFrame {
             if (query.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Please enter a search term.", "No query", JOptionPane.WARNING_MESSAGE);
             } else {
-                showResults(query);
+                showResults(query,db);
             }
         };
         searchBtn.addActionListener(e -> doSearch.run());
@@ -113,10 +115,26 @@ public class SearchFrame extends JFrame {
         setVisible(true);
     }
 
-    private void showResults(String query) {
-        resultArea.setText("User: " + username
-                + "\nResults for: " + query + "\n=================\n");
-        for (int i = 1; i <= 3; i++)
-            resultArea.append("Result " + i + ": This is a simulated recipe result for \"" + query + "\"\n");
+    private void showResults(String query,SQLInteractor db) {
+        String temp_str="";
+        try{
+            ResultSet temp_rs = db.searchByTitle(query);
+            int i=1;
+            while(temp_rs.next()){
+                temp_str=temp_str+"Recipe"+i+":"+temp_rs.getString("Title")+"\n------\n";
+                i++;
+            }
+            resultArea.setText(temp_str);
+        }
+        catch(SQLException e){
+            temp_str=temp_str+"\nPROBLEM LOADING THE SEARCH RESULTS!!";
+            resultArea.setText(temp_str);
+            System.out.println("An SQLException occured:"+e.getMessage());
+        }
+        catch(Exception e){
+            temp_str=temp_str+"\nPROBLEM LOADING THE SEARCH RESULTS!!";
+            resultArea.setText(temp_str);
+            System.out.println("A Random Exception occured:"+e.getMessage());
+        }
     }
 }

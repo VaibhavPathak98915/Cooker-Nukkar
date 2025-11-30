@@ -3,11 +3,27 @@ import resources.SQLInteractor;
 
 import javax.swing.SwingUtilities;
 
+
+public class Main{
+    public static void main(String[] args) {
+        SQLInteractor db =new SQLInteractor();
+        if(db.getcon()){
+            SwingUtilities.invokeLater(()->new LoginFrame(db));
+        }
+        else{
+            db.close();
+        }
+    }
+}
+
+/*
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
+*/
 
-public class Main{    
+/*    
+Old main function
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
         SQLInteractor db = new SQLInteractor();
@@ -36,5 +52,4 @@ public class Main{
         }
         sc.close();
         db.close();
-    }
-}
+    }*/

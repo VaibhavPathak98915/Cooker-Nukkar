@@ -1,17 +1,21 @@
 package resources;
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
+
+/*
 import java.util.Arrays;
 import java.util.List;
+*/
 
 public class LoginFrame extends JFrame {
     JTextField userField = new JTextField(15);
     JPasswordField passField = new JPasswordField(15);
     JButton loginButton = createButton("Login", new Color(66, 133, 244));
     JLabel msgLabel = new JLabel("", SwingConstants.CENTER);
-    static List<String> allowedNames = Arrays.asList("devansh", "vaibhav", "chanchal", "sheetal");
+    //static List<String> allowedNames = Arrays.asList("devansh", "vaibhav", "chanchal", "sheetal");
 
-    public LoginFrame() {
+    public LoginFrame(SQLInteractor db) {
         setTitle("Login");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);  // Fullscreen with controls
@@ -59,18 +63,37 @@ public class LoginFrame extends JFrame {
         bgPanel.add(formPanel, new GridBagConstraints());
 
         loginButton.addActionListener(e -> {
-            String u = userField.getText().toLowerCase().trim();
+            String u = userField.getText().trim();
             String p = new String(passField.getPassword()).trim();
-            if (!allowedNames.contains(u)) {
-                msgLabel.setText("Allowed users: Devansh, Vaibhav, Chanchal, Sheetal");
-                msgLabel.setForeground(Color.RED);
-            } else if (!p.equals("1234")) {
-                msgLabel.setText("Password must be '1234' (only numbers)!");
-                msgLabel.setForeground(Color.RED);
-            } else {
-                dispose();
-                new SearchFrame(capitalize(u));
+            try{
+                if(db.checkUser(u, p)){
+                    dispose();
+                    new SearchFrame(capitalize(u),db);
+                }
+                else{
+                    msgLabel.setText("Invalid Username and/or Password!!");
+                    msgLabel.setForeground(Color.RED);
+                }
             }
+            catch(SQLException err){
+                System.out.println("An SQLException occures:"+err.getMessage());
+            }
+            catch(Exception err){
+                System.out.println("Some Randome Error occured:"+err.getMessage());
+                System.out.println(err.getStackTrace());
+            }
+/*
+if (!allowedNames.contains(u)) {
+    msgLabel.setText("Allowed users: Devansh, Vaibhav, Chanchal, Sheetal");
+    msgLabel.setForeground(Color.RED);
+} else if (!p.equals("1234")) {
+    msgLabel.setText("Password must be '1234' (only numbers)!");
+    msgLabel.setForeground(Color.RED);
+} else {
+    dispose();
+    new SearchFrame(capitalize(u));
+}
+*/
         });
 
         setContentPane(bgPanel);

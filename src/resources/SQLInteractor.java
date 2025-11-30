@@ -19,7 +19,7 @@ public class SQLInteractor{
             System.out.println("Connection to Database Established...");
             st = con.createStatement();
             st.setQueryTimeout(30);
-            st.executeQuery("PRAGMA foreign_key = ON;");
+            st.executeUpdate("PRAGMA foreign_key = ON;");
         }
         catch(SQLException e){
             System.out.println("An SQL Exception Occured: "+e.getMessage());
@@ -38,13 +38,14 @@ public class SQLInteractor{
     }
     //Method to check User during Login
     public boolean checkUser(String UserName, String Password) throws SQLException{
-        if(Password==""){
+        String a="";
+        if(Password.equals(a)){
             return false;
         }
         String Query = "SELECT Password FROM Users WHERE UserName='"+UserName+"';";
         ResultSet temprs = st.executeQuery(Query);
         String temp_pass = temprs.getString("Password");
-        if(temp_pass==Password){
+        if(temp_pass.equals(Password)){
             return true;
         }
         return false;
