@@ -53,12 +53,12 @@ public class SQLInteractor{
     }
     //Methods to pass SELECT queries to the DB
     public ResultSet searchByTitle(String Title) throws SQLException{
-        String Query = "SELECT * FROM Recipies WHERE Title LIKE '%"+Title+"%' ORDER BY CASE WHEN Bookmark = 1 THEN 0 ELSE 1 END, Title;";
+        String Query = "SELECT id, Title FROM Recipies WHERE Title LIKE '%"+Title+"%' ORDER BY CASE WHEN Bookmark = 1 THEN 0 ELSE 1 END, Title;";
         rs = st.executeQuery(Query);
         return rs;
     }
     public ResultSet searchByIngredient(String Ingredients) throws SQLException{
-        String Query = "SELECT * FROM Recipies WHERE Ingredients LIKE '%"+Ingredients+"%' ORDER BY CASE WHEN Bookmark = 1 THEN 0 ELSE 1 END, Title;";
+        String Query = "SELECT id, Title FROM Recipies WHERE Ingredients LIKE '%"+Ingredients+"%' ORDER BY CASE WHEN Bookmark = 1 THEN 0 ELSE 1 END, Title;";
         rs = st.executeQuery(Query);
         return rs;
     }
@@ -91,22 +91,22 @@ public class SQLInteractor{
     public void addRecipe(String Title, String Ingredients, String Instructions, String Image_Name) throws SQLException{
         int id = nextRid();
         String Query = "INSERT INTO Recipies VALUES ("+id+",'"+Title+"','"+Ingredients+"','"+Instructions+"','"+Image_Name+"');";
-        st.executeQuery(Query);
+        st.executeUpdate(Query);
     }
     public void addBookmark(int id) throws SQLException{
         String Query = "UPDATE Recipies SET Bookmark = 1 WHERE id="+id+";";
-        st.executeQuery(Query);
+        st.executeUpdate(Query);
     }
     public void removeBookmark(int id) throws SQLException{
         String Query = "UPDATE Recipies SET Bookmark = 0 WHERE id="+id+";";
-        st.executeQuery(Query);
+        st.executeUpdate(Query);
     }
     public void addHistory(int rid, int uid) throws SQLException{
         String Query = "SELECT MAX(aid) FROM History;";
         ResultSet temprs = st.executeQuery(Query);
         int nextAid = temprs.getInt(0);
         Query = "INSERT INTO History VALUES ("+nextAid+","+rid+","+uid+");";
-        st.execute(Query);
+        st.executeUpdate(Query);
     }
     /*The connection from the database will be closed by using the close method
     --of the SQLInteractor. The object will be of no use after using close method */
@@ -114,7 +114,7 @@ public class SQLInteractor{
         try{
             if(con!=null){
                 con.close();
-                System.out.println("...Connection to the Database closed");
+                System.out.println("\n...Connection to the Database closed");
             }
         }
         catch(SQLException e){

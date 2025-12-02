@@ -1,17 +1,28 @@
 package resources;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SearchFrame extends JFrame {
     JTextField searchField = new JTextField(22);
     JButton searchBtn = new JButton("Search");
-    JTextArea resultArea = new JTextArea(8, 36);
-    String username;
+    
+    DefaultListModel<ListItem> resultModel = new DefaultListModel<>();
+    JList<ListItem> resultList = new JList<>(resultModel);
 
-    public SearchFrame(String username,SQLInteractor db) {
+    String username;
+    SQLInteractor db;
+
+    public SearchFrame(String username, SQLInteractor db) {
         this.username = username;
+        this.db = db;
+
+        setMinimumSize(new Dimension(1020, 680));
+
         setTitle("Recipe Search");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -51,7 +62,7 @@ public class SearchFrame extends JFrame {
         historyItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "History menu selected"));
         userProfileItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "User Profile menu selected"));
         helpItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Help clicked. Instructions here."));
-        quitItem.addActionListener(e -> {db.close();System.exit(0);});
+        quitItem.addActionListener(e -> { db.close(); System.exit(0); });
 
         // ----------- UI CONTENT BELOW MENUBAR -----------
         ImageIcon imgIcon = new ImageIcon(getClass().getResource("logo.png"));
@@ -63,78 +74,107 @@ public class SearchFrame extends JFrame {
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setMaximumSize(new Dimension(800, Integer.MAX_VALUE));
 
-        JLabel greet = new JLabel("Welcome, " + username + "!", SwingConstants.CENTER);
-        greet.setFont(new Font("Arial", Font.BOLD, 36));
+        JLabel greet = new JLabel("Welcome " + username + "!", SwingConstants.CENTER);
+        greet.setFont(new Font("Arial", Font.BOLD, 30));
         greet.setForeground(new Color(33, 33, 99));
         greet.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(Box.createVerticalStrut(28));
         centerPanel.add(greet);
-        centerPanel.add(Box.createVerticalStrut(32));
+        centerPanel.add(Box.createVerticalStrut(15));
 
         JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         searchBarPanel.setOpaque(false);
         searchField.setFont(new Font("Arial", Font.PLAIN, 22));
-        searchField.setPreferredSize(new Dimension(340, 38));
+        searchField.setPreferredSize(new Dimension(340, 45));
         searchBtn.setFont(new Font("Arial", Font.BOLD, 22));
         searchBtn.setBackground(new Color(66, 133, 244));
         searchBtn.setForeground(Color.WHITE);
         searchBarPanel.add(searchField);
         searchBarPanel.add(searchBtn);
 
-        centerPanel.add(searchBarPanel); // Search bar is always above results
+        centerPanel.add(searchBarPanel);
         centerPanel.add(Box.createVerticalStrut(22));
 
-        resultArea.setEditable(false);
-        resultArea.setFont(new Font("Monospaced", Font.PLAIN, 20));
-        resultArea.setBackground(new Color(245, 245, 245, 200));
-        resultArea.setForeground(new Color(44, 62, 80));
-        resultArea.setBorder(BorderFactory.createEmptyBorder(8,8,8,8));
-        JScrollPane scrollPane = new JScrollPane(resultArea);
+        // Configure JList as results area
+        resultList.setFont(new Font("SansSerif", Font.PLAIN, 20));
+        resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultList.setVisibleRowCount(8);
+        resultList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        JScrollPane scrollPane = new JScrollPane(resultList);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.setMaximumSize(new Dimension(700, 220));
-        scrollPane.setPreferredSize(new Dimension(620, 200));
+        scrollPane.setMaximumSize(new Dimension(700, 420));
+        scrollPane.setPreferredSize(new Dimension((this.getWidth())/2, 400));
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
 
-        centerPanel.add(scrollPane); // Results area, always just below search bar
+        centerPanel.add(scrollPane);
 
         bgPanel.add(centerPanel, new GridBagConstraints());
 
+        // Search action
         Runnable doSearch = () -> {
             String query = searchField.getText().trim();
             if (query.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Please enter a search term.", "No query", JOptionPane.WARNING_MESSAGE);
             } else {
-                showResults(query,db);
+                showResults(query);
             }
         };
         searchBtn.addActionListener(e -> doSearch.run());
         searchField.addActionListener(e -> doSearch.run());
 
+        // Double-click on result = open detail
+        resultList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) { // double-click
+                    int index = resultList.locationToIndex(e.getPoint());
+                    if (index >= 0) {
+                        ListItem item = resultModel.getElementAt(index);
+                        int recipe_id = item.getId();
+                        if (recipe_id >= 0) {
+                            openRecipeDetail(recipe_id);
+                        }
+                    }
+                }
+            }
+        });
+
         setContentPane(bgPanel);
         setVisible(true);
     }
 
-    private void showResults(String query,SQLInteractor db) {
-        String temp_str="";
-        try{
-            ResultSet temp_rs = db.searchByTitle(query);
-            int i=1;
-            while(temp_rs.next()){
-                temp_str=temp_str+"Recipe"+i+":"+temp_rs.getString("Title")+"\n------\n";
-                i++;
+    private void showResults(String query) {
+        resultModel.clear();
+        try {
+            ResultSet rs = db.searchByTitle(query);
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String title = rs.getString("Title");
+                ListItem temp=new ListItem(id, title);
+                resultModel.addElement(temp);
             }
-            resultArea.setText(temp_str);
+            if (resultModel.isEmpty()) {
+                ListItem temp = new ListItem("No recipes found");
+                resultModel.addElement(temp);
+            }
+        } catch (SQLException e) {
+            ListItem temp = new ListItem("PROBLEM LOADING THE SEARCH RESULTS!!");
+            resultModel.addElement(temp);
+            System.out.println("An SQLException occurred: " + e.getMessage());
+        } catch (Exception e) {
+            ListItem temp = new ListItem("PROBLEM LOADING THE SEARCH RESULTS!!");
+            resultModel.addElement(temp);
+            System.out.println("A Random Exception occurred: " + e.getMessage());
         }
-        catch(SQLException e){
-            temp_str=temp_str+"\nPROBLEM LOADING THE SEARCH RESULTS!!";
-            resultArea.setText(temp_str);
-            System.out.println("An SQLException occured:"+e.getMessage());
-        }
-        catch(Exception e){
-            temp_str=temp_str+"\nPROBLEM LOADING THE SEARCH RESULTS!!";
-            resultArea.setText(temp_str);
-            System.out.println("A Random Exception occured:"+e.getMessage());
-        }
+    }
+
+    private void openRecipeDetail(int id) {
+        // TODO: replace with your actual detail frame
+        // Example:
+        // new RecipeDetailFrame(username, db, id);
+        SwingUtilities.invokeLater(()->new OpenRecipe(db,id));
+        //JOptionPane.showMessageDialog(this, "Open details for recipe ID: " + id);
     }
 }

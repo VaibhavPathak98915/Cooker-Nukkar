@@ -3,11 +3,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 
-/*
-import java.util.Arrays;
-import java.util.List;
-*/
-
 public class LoginFrame extends JFrame {
     JTextField userField = new JTextField(15);
     JPasswordField passField = new JPasswordField(15);
@@ -82,18 +77,6 @@ public class LoginFrame extends JFrame {
                 System.out.println("Some Randome Error occured:"+err.getMessage());
                 System.out.println(err.getStackTrace());
             }
-/*
-if (!allowedNames.contains(u)) {
-    msgLabel.setText("Allowed users: Devansh, Vaibhav, Chanchal, Sheetal");
-    msgLabel.setForeground(Color.RED);
-} else if (!p.equals("1234")) {
-    msgLabel.setText("Password must be '1234' (only numbers)!");
-    msgLabel.setForeground(Color.RED);
-} else {
-    dispose();
-    new SearchFrame(capitalize(u));
-}
-*/
         });
 
         setContentPane(bgPanel);
