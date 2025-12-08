@@ -8,7 +8,6 @@ public class LoginFrame extends JFrame {
     JPasswordField passField = new JPasswordField(15);
     JButton loginButton = createButton("Login", new Color(66, 133, 244));
     JLabel msgLabel = new JLabel("", SwingConstants.CENTER);
-    //static List<String> allowedNames = Arrays.asList("devansh", "vaibhav", "chanchal", "sheetal");
 
     public LoginFrame(SQLInteractor db) {
         setTitle("Login");

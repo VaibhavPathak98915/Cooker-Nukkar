@@ -5,6 +5,38 @@ import java.sql.SQLException;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+
+class ImageTransferable implements Transferable {
+    private Image image;
+
+    public ImageTransferable(Image image) {
+        this.image = image;
+    }
+
+    @Override
+    public DataFlavor[] getTransferDataFlavors() {
+        return new DataFlavor[] { DataFlavor.imageFlavor };
+    }
+
+    @Override
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return DataFlavor.imageFlavor.equals(flavor);
+    }
+
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        if (!isDataFlavorSupported(flavor)) {
+            throw new UnsupportedFlavorException(flavor);
+        }
+        return image;
+    }
+}
 
 
 public class OpenRecipe extends JFrame {
@@ -16,8 +48,8 @@ public class OpenRecipe extends JFrame {
         try{
             ResultSet Recipe = db.getRecipeById(recipe_id);
             Title=Recipe.getString("Title");
-            Ingredients=Recipe.getString("Ingredients");
-            Instructions=Recipe.getString("Instructions");
+            Ingredients=toBulletsBySpace(Recipe.getString("Ingredients"));
+            Instructions=toBulletsByDot(Recipe.getString("Instructions"));
             Image_Path="bin/resources/images/Food Images/"+Recipe.getString("Image_Name")+".jpg";
         }
         catch(SQLException e){
@@ -68,6 +100,7 @@ public class OpenRecipe extends JFrame {
 
         // ----------- UI CONTENT BELOW MENUBAR -----------
         ImagePanel imagePanel = new ImagePanel(Image_Path);
+        imagePanel.setBorder(BorderFactory.createTitledBorder("Image:"));
         JTextArea Ingredients_ta = new JTextArea((this.getWidth())/3,(this.getHeight())/3);
         Ingredients_ta.setEditable(false);
         Ingredients_ta.setLineWrap(true);
@@ -75,7 +108,7 @@ public class OpenRecipe extends JFrame {
         Ingredients_ta.setFont(new Font("Times New Roman",Font.PLAIN,14));
         Ingredients_ta.setBackground(new Color(245, 245, 245, 200));
         Ingredients_ta.setForeground(new Color(44, 62, 80));
-        Ingredients_ta.setBorder(BorderFactory.createEmptyBorder(8,8,8,8));
+        Ingredients_ta.setBorder(BorderFactory.createTitledBorder("Ingredients:"));
         Ingredients_ta.setText(Ingredients);
         JScrollPane ing_ScrollPane = new JScrollPane(Ingredients_ta);
         ing_ScrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -90,7 +123,7 @@ public class OpenRecipe extends JFrame {
         Instructions_ta.setFont(new Font("Times New Roman",Font.PLAIN,14));
         Instructions_ta.setBackground(new Color(245, 245, 245, 200));
         Instructions_ta.setForeground(new Color(44, 62, 80));
-        Instructions_ta.setBorder(BorderFactory.createEmptyBorder(8,8,8,8));
+        Instructions_ta.setBorder(BorderFactory.createTitledBorder("Instructions:"));
         Instructions_ta.setText(Instructions);
         JScrollPane ins_ScrollPane = new JScrollPane(Instructions_ta);
         ins_ScrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -98,10 +131,85 @@ public class OpenRecipe extends JFrame {
         ins_ScrollPane.setPreferredSize(new Dimension(620, 200));
         ins_ScrollPane.setOpaque(false);
         ins_ScrollPane.getViewport().setOpaque(false);
+        //Copy Buttons
+        JButton copyIngredients = createButton("Copy Ingredients", new Color(66, 133, 244));
+        JButton copyInstructions = createButton("Copy Instructions", new Color(66, 133, 244));
+        JButton copyImage = createButton("Copy Image", new Color(66, 133, 244));
+        ing_ScrollPane.add(copyIngredients);
+        ins_ScrollPane.add(copyInstructions);
+        imagePanel.add(copyImage);
         this.add(ing_ScrollPane);
         this.add(ins_ScrollPane);
         this.add(imagePanel);
+        
+        //ActionListners
+        copyIngredients.addActionListener(e ->{
+            copyToClipboard(Ingredients);
+        });
+        copyInstructions.addActionListener(e ->{
+            copyToClipboard(Instructions);
+        });
+        copyImage.addActionListener(e ->{
+            Image imageToCopy;
+            try{
+                ImageIcon icon = new ImageIcon(Image_Path);
+                imageToCopy= icon.getImage();
+                if (imageToCopy != null) {
+                    copyToClipboard(imageToCopy);
+                }
+            }
+            catch(Exception err){System.out.println("Failed to load Image");}
+        });
+
         setSize(1020, 680);
         setVisible(true);
+    }
+
+    private JButton createButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Arial", Font.BOLD, 22));
+        return btn;
+    }
+
+    // ingredients: split by ', '
+    private String toBulletsBySpace(String text) {
+
+        String[] parts = text.split("', '");// split by one or more spaces [web:96][web:99][web:102]
+        parts[0]=parts[0].replace("['","");
+        parts[(parts.length)-1]=parts[(parts.length)-1].replace("']","");
+        StringBuilder sb = new StringBuilder();
+        for (String p : parts) {
+            String trimmed = p.trim();
+            if (!trimmed.isEmpty()) {
+                sb.append("• ").append(trimmed).append('\n');
+            }
+        }
+        return sb.toString();
+    }
+
+    // instructions: split by '.'
+    private String toBulletsByDot(String text) {
+        String[] parts = text.split("\\."); // split by dot [web:78][web:79]
+        StringBuilder sb = new StringBuilder();
+        for (String p : parts) {
+            String trimmed = p.trim();
+            if (!trimmed.isEmpty()) {
+                sb.append("• ").append(trimmed).append(".\n");
+            }
+        }
+        return sb.toString();
+    }
+    private void copyToClipboard(String text){
+        StringSelection str = new StringSelection(text);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(str,null);
+    }
+
+    private void copyToClipboard(Image image){
+        ImageTransferable transferable = new ImageTransferable(image);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(transferable,null);
     }
 }
