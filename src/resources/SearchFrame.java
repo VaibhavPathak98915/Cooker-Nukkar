@@ -30,18 +30,8 @@ public class SearchFrame extends JFrame {
         // ------------ MENUBAR -------------
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem addBookmarkItem = new JMenuItem("Add Bookmark");
-        JMenuItem addRecipeItem = new JMenuItem("Add Recipe");
-        fileMenu.add(addBookmarkItem);
-        fileMenu.add(addRecipeItem);
-
         JMenu viewMenu = new JMenu("View");
-        JMenuItem bookmarksItem = new JMenuItem("Bookmarks");
-        JMenuItem historyItem = new JMenuItem("History");
         JMenuItem userProfileItem = new JMenuItem("User Profile");
-        viewMenu.add(bookmarksItem);
-        viewMenu.add(historyItem);
         viewMenu.add(userProfileItem);
 
         JMenu toolsMenu = new JMenu("Tools");
@@ -50,17 +40,12 @@ public class SearchFrame extends JFrame {
         toolsMenu.add(quitItem);
         toolsMenu.add(helpItem);
 
-        menuBar.add(fileMenu);
         menuBar.add(viewMenu);
         menuBar.add(toolsMenu);
         setJMenuBar(menuBar);
 
         // Actions for demonstration
-        addBookmarkItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Add Bookmark clicked"));
-        addRecipeItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Add Recipe clicked"));
-        bookmarksItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Bookmarks menu selected"));
-        historyItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "History menu selected"));
-        userProfileItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "User Profile menu selected"));
+        userProfileItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "User name:"+username));
         helpItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Help clicked. Instructions here."));
         quitItem.addActionListener(e -> { db.close(); System.exit(0); });
 
@@ -171,10 +156,6 @@ public class SearchFrame extends JFrame {
     }
 
     private void openRecipeDetail(int id) {
-        // TODO: replace with your actual detail frame
-        // Example:
-        // new RecipeDetailFrame(username, db, id);
         SwingUtilities.invokeLater(()->new OpenRecipe(db,id));
-        //JOptionPane.showMessageDialog(this, "Open details for recipe ID: " + id);
     }
 }

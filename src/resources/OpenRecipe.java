@@ -74,10 +74,6 @@ public class OpenRecipe extends JFrame {
         fileMenu.add(removeBookmarkItem);
         fileMenu.add(ingredientSubstitute);
 
-        JMenu viewMenu = new JMenu("View");
-        JMenuItem userProfileItem = new JMenuItem("User Profile");
-        viewMenu.add(userProfileItem);
-
         JMenu toolsMenu = new JMenu("Tools");
         JMenuItem closeRecipe = new JMenuItem("Close");
         JMenuItem helpItem = new JMenuItem("Help");
@@ -85,7 +81,6 @@ public class OpenRecipe extends JFrame {
         toolsMenu.add(helpItem);
 
         menuBar.add(fileMenu);
-        menuBar.add(viewMenu);
         menuBar.add(toolsMenu);
         setJMenuBar(menuBar);
 
@@ -120,7 +115,6 @@ public class OpenRecipe extends JFrame {
             }
         });
         ingredientSubstitute.addActionListener(e -> openIngredientSubstitute());
-        userProfileItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "User Profile menu selected"));
         helpItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Help clicked. Instructions here."));
         closeRecipe.addActionListener(e -> {this.dispose();});
 
