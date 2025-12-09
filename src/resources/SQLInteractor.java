@@ -87,7 +87,12 @@ public class SQLInteractor{
         rs = st.executeQuery(Query);
         return rs;
     }
-    //Methods to pass INSERT queries to the DB
+    public ResultSet getAlternative(String Ingredient) throws SQLException{
+        String Query="SELECT * FROM Alternatives WHERE Ingredient LIKE '%"+Ingredient+"%' LIMIT 1;";
+        rs = st.executeQuery(Query);
+        return rs;
+    }
+    //Methods to pass INSERT and UPDATE queries to the DB
     public void addRecipe(String Title, String Ingredients, String Instructions, String Image_Name) throws SQLException{
         int id = nextRid();
         String Query = "INSERT INTO Recipies VALUES ("+id+",'"+Title+"','"+Ingredients+"','"+Instructions+"','"+Image_Name+"');";

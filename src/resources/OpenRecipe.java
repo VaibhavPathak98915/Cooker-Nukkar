@@ -44,7 +44,9 @@ public class OpenRecipe extends JFrame {
     String Ingredients;
     String Instructions;
     String Image_Path;
+    SQLInteractor db;
     public OpenRecipe(SQLInteractor db, int recipe_id){
+        this.db=db;
         try{
             ResultSet Recipe = db.getRecipeById(recipe_id);
             Title=Recipe.getString("Title");
@@ -66,16 +68,14 @@ public class OpenRecipe extends JFrame {
 
         JMenu fileMenu = new JMenu("File");
         JMenuItem addBookmarkItem = new JMenuItem("Add Bookmark");
-        JMenuItem addRecipeItem = new JMenuItem("Add Recipe");
+        JMenuItem removeBookmarkItem = new JMenuItem("Remove Bookmark");
+        JMenuItem ingredientSubstitute = new JMenuItem("Substitute Ingredient");
         fileMenu.add(addBookmarkItem);
-        fileMenu.add(addRecipeItem);
+        fileMenu.add(removeBookmarkItem);
+        fileMenu.add(ingredientSubstitute);
 
         JMenu viewMenu = new JMenu("View");
-        JMenuItem bookmarksItem = new JMenuItem("Bookmarks");
-        JMenuItem historyItem = new JMenuItem("History");
         JMenuItem userProfileItem = new JMenuItem("User Profile");
-        viewMenu.add(bookmarksItem);
-        viewMenu.add(historyItem);
         viewMenu.add(userProfileItem);
 
         JMenu toolsMenu = new JMenu("Tools");
@@ -90,10 +90,36 @@ public class OpenRecipe extends JFrame {
         setJMenuBar(menuBar);
 
         // Actions for demonstration
-        addBookmarkItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Add Bookmark clicked"));
-        addRecipeItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Add Recipe clicked"));
-        bookmarksItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Bookmarks menu selected"));
-        historyItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "History menu selected"));
+        addBookmarkItem.addActionListener(e -> {
+            try{
+                db.addBookmark(recipe_id);
+                JOptionPane.showMessageDialog(this, "Bookmark to this recipe added");
+                addBookmarkItem.setEnabled(false);
+                removeBookmarkItem.setEnabled(true);
+
+            }
+            catch(SQLException err){
+                System.out.println("SQLException occured:"+err.getMessage());
+            }
+            catch(Exception err){
+                System.out.println("A Random Error occured:"+err.getMessage());
+            }
+        });
+        removeBookmarkItem.addActionListener(e -> {
+            try{
+                db.removeBookmark(recipe_id);
+                JOptionPane.showMessageDialog(this, "Bookmark to this recipe removed");
+                removeBookmarkItem.setEnabled(false);
+                addBookmarkItem.setEnabled(true);
+            }
+            catch(SQLException err){
+                System.out.println("SQLException occured:"+err.getMessage());
+            }
+            catch(Exception err){
+                System.out.println("A Random Error occured:"+err.getMessage());
+            }
+        });
+        ingredientSubstitute.addActionListener(e -> openIngredientSubstitute());
         userProfileItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "User Profile menu selected"));
         helpItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Help clicked. Instructions here."));
         closeRecipe.addActionListener(e -> {this.dispose();});
@@ -211,5 +237,11 @@ public class OpenRecipe extends JFrame {
         ImageTransferable transferable = new ImageTransferable(image);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(transferable,null);
+    }
+
+    private void openIngredientSubstitute(){
+        SwingUtilities.invokeLater(() -> {
+            new IngredientSubstitute(db).setVisible(true);
+        });
     }
 }
