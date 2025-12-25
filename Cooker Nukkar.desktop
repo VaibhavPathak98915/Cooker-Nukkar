@@ -1,0 +1,17 @@
+[Desktop Entry]
+
+Version=1.0
+
+Type=Application
+
+Name=Cooker Nukkar
+
+Exec=/home/vaibhav/Desktop/MCA/Sem1_Project/Cooker_Nukkar/run_CookerNukkar.sh
+
+Terminal=true
+
+Path=/home/vaibhav/Desktop/MCA/Sem1_Project/Cooker_Nukkar
+
+Icon=/home/vaibhav/Desktop/MCA/Sem1_Project/Cooker_Nukkar/CookerNukar.ico
+
+GenericName[en_IN]="Desktop Shotcut for Cooker Nukkar"
